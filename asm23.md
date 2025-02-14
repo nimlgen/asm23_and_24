@@ -28,26 +28,11 @@ Tables which looks like that to jump into cmds:
 ### mb_on_scsi_write_cmd:
 
 Different write scsi commands parsing (seems they support 2 of them write10 and write16):
-```
-  if (cEXTMEM0002 == '*') {
-    pbVar5 = (byte *)CONCAT11(DAT_EXTMEM_0007 - (((0xe9 < DAT_EXTMEM_0008) << 7) >> 7),
-                              DAT_EXTMEM_0008 + 0x16);
-    DAT_INTMEM_4f = *pbVar5;
-    DAT_INTMEM_50 = pbVar5[1];
-  }
-  else {
-    pbVar5 = (byte *)CONCAT11(DAT_EXTMEM_0007 - (((0xe4 < DAT_EXTMEM_0008) << 7) >> 7),
-                              DAT_EXTMEM_0008 + 0x1b);
-    DAT_INTMEM_4f = *pbVar5;
-    DAT_INTMEM_50 = pbVar5[1];
-  }
-```
-
 TODO: they should do writes here (nvme write command is byte 01)
 
 ## Custom scsi commands
 CODE:a5f1 -- mb_read_e4_cmd
 CODE:b6b3 -- mb_write_e5_cmd
 
-## TLP sender (the function we use)
+## TLP
 `FUN_CODE_8b25` -- looks excatly the way we send tlp with scsi. We use custom scsi commands which just memwrite (`mb_write_e5_cmd`).
