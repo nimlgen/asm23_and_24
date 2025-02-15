@@ -82,5 +82,6 @@ It's `CODE:8f16`.
 * Fill the command inside the main function: 0x820000 or 0x920000 seems to be the queues addresses.
 * Call to `CODE:ba61`
     * Sets doorbell `DAT_INTMEM_6c + 1U & 3`
-    * Calls to `CODE:c90a`. Sets some pci regs: DAT_EXTMEM_b296 = 4; DAT_EXTMEM_b251 = param_1 (the value of a doorbell???); wait_pci; DAT_EXTMEM_b296 = 4;
+    * Calls to `CODE:c90a`.
+        * Sets some pci regs: DAT_EXTMEM_b296 = 4; DAT_EXTMEM_b251 = param_1 (the value of a doorbell???); DAT_EXTMEM_b254 = 1(??); wait_pci; DAT_EXTMEM_b296 = 4;
     * Calls to `CODE:9450` which looks like a loop waiting for a completion.
