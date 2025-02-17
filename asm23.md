@@ -85,3 +85,8 @@ It's `CODE:8f16`.
     * Calls to `CODE:c90a`.
         * Sets some pci regs: DAT_EXTMEM_b296 = 4; DAT_EXTMEM_b251 = param_1 (the value of a doorbell???); DAT_EXTMEM_b254 = 1(??); wait_pci; DAT_EXTMEM_b296 = 4;
     * Calls to `CODE:9450` which looks like a loop waiting for a completion.
+
+### reads from nvme
+function: `CODE:0914`
+user queue seems to be 0x20 entries.
+addresses passed to nvme are 00200000 - 00280000. step is 0x4000
