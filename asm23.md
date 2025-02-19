@@ -44,7 +44,6 @@ When cfg tlp is called:
 
 read_pci_cfg_16b_into_addr_r6r7 -- read 16b of cfg and put into 0x8000
 
-
 mem tlp:
 0x5f9-0x5fc - mem address
 
