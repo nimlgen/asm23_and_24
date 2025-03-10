@@ -89,3 +89,36 @@ It's `CODE:8f16`.
 function: `CODE:0914`
 user queue seems to be 0x20 entries.
 addresses passed to nvme are 00200000 - 00280000. step is 0x4000
+
+# usb buffer acccess:
+
+FUN_CODE_37ab(char param_1)
+    DAT_EXTMEM_06ca = *pcVar3;
+    DAT_EXTMEM_06cb = pcVar3[1]; //
+    DAT_EXTMEM_005f = DAT_EXTMEM_ceb2;
+    DAT_EXTMEM_0060 = DAT_EXTMEM_ceb3;
+    DAT_EXTMEM_0007 = DAT_EXTMEM_06ca - (((0xfe < DAT_EXTMEM_06cb) << 7) >> 7);
+    DAT_EXTMEM_0006 = 1;
+    DAT_EXTMEM_0008 = BANK0_R7;
+    DAT_EXTMEM_0656 =
+    mb_scsi_cmd_parser():
+        DAT_EXTMEM_900c = DAT_EXTMEM_005f;
+        DAT_EXTMEM_900d = DAT_EXTMEM_0060;
+        DAT_EXTMEM_900e = DAT_EXTMEM_005f;
+        DAT_EXTMEM_900f = DAT_EXTMEM_0060;
+        mb_internal_cmd():
+            char mb_read_e4_cmd(void):
+                DAT_EXTMEM_9008 -- read size
+                DAT_EXTMEM_9007 -- 0 (maybe read hi, need to check)
+                if ((DAT_EXTMEM_9000 & 1) != 0) { // check status
+
+                }
+
+                after that there is a copy in a buffer starting 0x8000
+                DAT_EXTMEM_0653 = return of mb_read_e4_cmd (that is 1)
+
+        some usb tricks:
+        write 0x9000 + DAT_EXTMEM_0061 + 0x1a = 0x10
+
+        DAT_EXTMEM_9093 = 8; // other possible pair is 93=2 / 94=0x10
+        DAT_EXTMEM_9094 = 2;
