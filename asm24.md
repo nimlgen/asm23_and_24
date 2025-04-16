@@ -26,6 +26,11 @@ memspaces:
 0xd00000 + 0x1008 8 -- req
 0xd00000 + 0x100c 8 -- comp
 
+usb.pcie_mem_req(0xd00000 + 0x1008, value=0x2, size=4)
+usb.pcie_mem_req(0xd00000 + 0x100c, value=0x2, size=4)
+print(usb.read(0xb200 + 0x51, 1))
+print(usb.read(0xb200 + 0x52, 1))
+
 ## trash notes:
 (DAT_EXTMEM_9000 & 1) == 0 -- old msb?
 
