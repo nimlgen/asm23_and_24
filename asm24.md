@@ -32,6 +32,9 @@ print(usb.read(0xb200 + 0x51, 1))
 print(usb.read(0xb200 + 0x52, 1))
 
 ## trash notes:
+
+fill_scsi_resp is called from FUN_CODE_2608 is called on scsi_write/read success.
+
 (DAT_EXTMEM_9000 & 1) == 0 -- old msb?
 
 trampolines:
