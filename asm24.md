@@ -1,4 +1,19 @@
-AS_USB4_240129_85_00_00.bin
+240417_85_00_00
+
+## Processing 101
+
+Int table is first 2 jmps:
+CODE:0000  02 43 1a      LJMP       reset
+CODE:0003  02 0e 5b      LJMP       int0
+
+reset is called once and it loops forever.
+int0 is called for every endpoint request.
+
+scsi_read:
+calls int0 for cmd endpoint. cmd processed with 0x9.
+
+when no drive cmd endpoint is processed with out delays, but other endpoints do not enter int0.
+TODO: the main loop should have polling logic? haven't found it yet.
 
 ## SCSI parsing
 
