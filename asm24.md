@@ -1,6 +1,6 @@
-# 240417\_85\_00\_00 – Technical Notes (Revised)
+fw is `240417_85_00_00`
 
-## Introduction
+## intro
 
 The interrupt table consists of the first two jumps:
 
@@ -14,7 +14,7 @@ CODE:0003  02 0e 5b  LJMP  int0
 
 ---
 
-## Memory Map
+## map
 
 ```
 0x0000–0x5FFF  24 kB XRAM – Global controller state (temporal data, next SCSI offset, etc.).
@@ -48,7 +48,7 @@ CODE:0003  02 0e 5b  LJMP  int0
 
 ---
 
-## `int0` (USB‑request interrupt)
+## `int0`
 
 Every USB‑endpoint request triggers the `int0` handler.
 For nvme mode:
@@ -57,7 +57,7 @@ For nvme mode:
 
 ---
 
-## SCSI Return Codes
+## intermediate return codes after scsi commands (proceed in `fill_scsi_to_usb_transport` and some layer above)
 
 0x05 - Do nothing (release endpoints)
 0x01 - Complete with a 0x8000‑byte read into the endpoint
@@ -66,7 +66,7 @@ For nvme mode:
 
 ---
 
-## SCSI‑Write Patch
+## write patch
 
 1. Change the return code to 0x05 to exit and free all endpoints after the write completes.
 2. Restore the list of free buffers (`0x0170–0x0174`).
@@ -75,7 +75,7 @@ For nvme mode:
 
 ---
 
-## Read Path: 0x8000 vs SCSI read
+## read path: 0x8000 vs dma read
 
 The regular data in (0x81) endpoint does **not** reach `LAB_CODE_10e0` but is handled in `LAB_CODE_0fc6`. For these cases (and for flash reads), registers hold:
 ```
@@ -97,7 +97,7 @@ self.exec_ops([WriteOp(0x54b, b'\x20'), WriteOp(0x54e, b'\x04'), WriteOp(0x5a8, 
 
 ---
 
-## USB Buffer Allocation
+## on-controller usb buffers
 
 Firmware appears to follow three code paths, depending on requested size:
 
@@ -113,7 +113,7 @@ The current write path clears `0xCE40`, which selects the DMA‑window offset fo
 
 ## TLP
 
-TLP transfers are limited to a 4‑byte payload; larger payloads fail (`usb.py:pcie_request`).
+TLP transfers are limited to a 4‑byte payload; larger payloads fail (`usb.py:pcie_request`). Same as asm23.
 
 ---
 
@@ -122,23 +122,31 @@ TLP transfers are limited to a 4‑byte payload; larger payloads fail (`usb.py:p
 * `CODE:393C` — `mb_scsi_cmd_parser`: parses SCSI commands (read, write, etc.).
 * `CODE:2E01` — `mb_on_scsi_read`
 
-### Custom SCSI Commands
+### custom commands
 
 ```
-CODE:3948  39 B9  → LAB_CODE_39B9   (E0h)
-CODE:394B  39 BE  → LAB_CODE_39BE   (E1h)
-CODE:394E  39 C3  → LAB_CODE_39C3   (E2h)
-CODE:3951  39 C8  → LAB_CODE_39C8   (E3h)
-CODE:3954  39 CD  → jumper_e4       (E4h)
-CODE:3957  39 D2  → jumper_e5       (E5h)
-CODE:395A  39 B4  → jumper_e6       (E6h)
-CODE:395D  39 D7  → LAB_CODE_39D7   (E8h)
+CODE:3948  39 b9         addr       LAB_CODE_39b9
+CODE:394a  e0            ??         E0h
+CODE:394b  39 be         addr       LAB_CODE_39be
+CODE:394d  e1            ??         E1h
+CODE:394e  39 c3         addr       LAB_CODE_39c3
+CODE:3950  e2            ??         E2h
+CODE:3951  39 c8         addr       LAB_CODE_39c8
+CODE:3953  e3            ??         E3h
+CODE:3954  39 cd         addr       jumper_e4
+CODE:3956  e4            ??         E4h
+CODE:3957  39 d2         addr       jumper_e5
+CODE:3959  e5            ??         E5h
+CODE:395a  39 b4         addr       jumper_e6
+CODE:395c  e6            ??         E6h
+CODE:395d  39 d7         addr       LAB_CODE_39d7
+CODE:395f  e8            ??         E8h
 ```
 
 * **E5** — Write one byte to memory
 * **E4** — Read up to 0xFF bytes from memory
 
-#### `E1` — Write Configuration
+##### `E1` — Write config
 
 ```python
 # Write config 1
@@ -147,7 +155,7 @@ cdb = struct.pack('>BBB12x', 0xE1, 0x50, 0x00)
 cdb = struct.pack('>BBB12x', 0xE1, 0x50, 0x01)
 ```
 
-#### `E3` — Write Firmware
+##### `E3` — Write fw
 
 ```python
 # Lower part
@@ -156,7 +164,7 @@ cdb = struct.pack('>BBI', 0xE3, 0x50, len(part1))
 cdb = struct.pack('>BBI', 0xE3, 0xD0, len(part2))
 ```
 
-#### `E8` — Reset Controller
+##### `E8` — Reset Controller
 
 ```python
 cdb = struct.pack('>BB13x', 0xE8, 0x51)  # reset
@@ -164,9 +172,9 @@ cdb = struct.pack('>BB13x', 0xE8, 0x51)  # reset
 
 ---
 
-## Sending a SCSI Write to NVMe
+## Sending a scsi wr to nvme
 
-### Ring Buffer Updates
+### nvme ring buffer
 
 ```
 diff 0xA600 0x00 0x01
@@ -207,3 +215,11 @@ print(usb.read(0xB200 + 0x52, 1))
 ## Tools
 
 Firmware patcher and trace‑point injection scripts are in **`patcher.py`**.
+Also some interesting tracing points are commented out:
+```python
+# this will also contain diff for other reads inside dump_stats/reset_stats. so check the diff between scsi_read and no scsi_read.
+
+reset_stats()
+usb.scsi_read(sz, lba=0x1000 + i)
+dump_stats()
+```
