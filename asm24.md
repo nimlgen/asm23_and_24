@@ -1,12 +1,12 @@
 240417_85_00_00
 
-## Processing 101
+## intro
 
 Int table is first 2 jmps:
 CODE:0000  02 43 1a      LJMP       reset
 CODE:0003  02 0e 5b      LJMP       int0
 
-reset is called once and it loops forever.
+reset is called once.
 int0 is called for every endpoint request.
 
 #### map
